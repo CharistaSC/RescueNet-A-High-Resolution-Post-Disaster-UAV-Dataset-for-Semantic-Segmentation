@@ -30,12 +30,12 @@ from torchvision.utils import save_image
 from models.factory import create_segmenter
 
 
-device = torch.device('cuda')
+pip = torch.device('cuda')
 
 def get_parser():
     parser = argparse.ArgumentParser(description='PyTorch Semantic Segmentation')
-    parser.add_argument('--config', type=str, default='config/michael/rescuenet-pspnet101.yaml', help='config file')
-    parser.add_argument('opts', help='see config/michael/rescuenet-pspnet101.yaml for all options', default=None, nargs=argparse.REMAINDER)
+    parser.add_argument('--config', type=str, default='Segmentation-Experiments/config/rescuenet-pspnet101.yaml', help='config file')
+    parser.add_argument('opts', help='see Segmentation-Experiments/config/rescuenet-pspnet101.yaml for all options', default=None, nargs=argparse.REMAINDER)
     args = parser.parse_args()
     assert args.config is not None
     cfg = config.load_cfg_from_cfg_file(args.config)

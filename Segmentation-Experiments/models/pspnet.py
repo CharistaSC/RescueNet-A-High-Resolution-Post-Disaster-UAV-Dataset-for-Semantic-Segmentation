@@ -44,7 +44,9 @@ class PSPNet(nn.Module):
             resnet = models.resnet101(pretrained=pretrained)
         else:
             resnet = models.resnet152(pretrained=pretrained)
-        self.layer0 = nn.Sequential(resnet.conv1, resnet.bn1, resnet.relu, resnet.conv2, resnet.bn2, resnet.relu, resnet.conv3, resnet.bn3, resnet.relu, resnet.maxpool)
+
+        # Adjusted layer0 initialization
+        self.layer0 = nn.Sequential(resnet.conv1, resnet.bn1, resnet.relu, resnet.maxpool)
         self.layer1, self.layer2, self.layer3, self.layer4 = resnet.layer1, resnet.layer2, resnet.layer3, resnet.layer4
 
         for n, m in self.layer3.named_modules():

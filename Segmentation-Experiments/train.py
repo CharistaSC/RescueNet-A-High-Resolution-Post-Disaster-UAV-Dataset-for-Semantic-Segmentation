@@ -26,8 +26,8 @@ from models.factory import create_segmenter
 
 def get_parser():
     parser = argparse.ArgumentParser(description='PyTorch Semantic Segmentation')
-    parser.add_argument('--config', type=str, default='config/michael/rescuenet-pspnet101.yaml', help='config file')
-    parser.add_argument('opts', help='see config/michael/rescuenet-pspnet101.yaml for all options', default=None, nargs=argparse.REMAINDER)
+    parser.add_argument('--config', type=str, default='Segmentation-Experiments/config/rescuenet-pspnet101.yaml', help='config file')
+    parser.add_argument('opts', help='see Segmentation-Experiments/config/rescuenet-pspnet101.yaml for all options', default=None, nargs=argparse.REMAINDER)
     args = parser.parse_args()
     assert args.config is not None
     cfg = config.load_cfg_from_cfg_file(args.config)
@@ -40,11 +40,24 @@ def get_logger():
     logger_name = "main-logger"
     logger = logging.getLogger(logger_name)
     logger.setLevel(logging.INFO)
-    handler = logging.StreamHandler()
-    fmt = "[%(asctime)s %(levelname)s %(filename)s line %(lineno)d %(process)d] %(message)s"
-    handler.setFormatter(logging.Formatter(fmt))
-    logger.addHandler(handler)
+
+    # Console handler
+    console_handler = logging.StreamHandler()
+    console_fmt = "[%(asctime)s %(levelname)s %(filename)s line %(lineno)d %(process)d] %(message)s"
+    console_handler.setFormatter(logging.Formatter(console_fmt))
+
+    # File handler (logs.txt will store all logs)
+    log_file = f"{args.save_path}/training_log_s{args.train_h}.txt"  # Change the name/path if needed
+    file_handler = logging.FileHandler(log_file)
+    file_fmt = "[%(asctime)s] %(levelname)s: %(message)s"
+    file_handler.setFormatter(logging.Formatter(file_fmt))
+
+    # Add handlers to the logger
+    logger.addHandler(console_handler)
+    logger.addHandler(file_handler)
+
     return logger
+
 
 def main_process():
     return not args.multiprocessing_distributed or (args.multiprocessing_distributed and args.rank % args.ngpus_per_node == 0)
@@ -68,8 +81,16 @@ def main():
 def main_worker(gpu, ngpus_per_node, argss):
     global args
     args = argss
-    print(args)
+    # print(args)
     
+    # Initialize lists for tracking metrics
+    train_epochs = []
+    train_loss = []
+    train_accuracy = []
+    val_epochs = []
+    val_loss = []
+    val_accuracy = []
+
     BatchNorm = nn.BatchNorm2d
 
     criterion = nn.CrossEntropyLoss(ignore_index=args.ignore_label)
@@ -147,7 +168,7 @@ def main_worker(gpu, ngpus_per_node, argss):
 
     # Import the requested dataset
     if args.dataset.lower() == 'rescuenet':
-        from data import RescueNetv2 as dataset
+        from data import RescueNet as dataset
     else:
         # Should never happen...but just in case it does
         raise RuntimeError("\"{0}\" is not a supported dataset.".format(
@@ -195,7 +216,7 @@ def main_worker(gpu, ngpus_per_node, argss):
             writer.add_scalar('allAcc_train', allAcc_train, epoch_log)
 
         if (epoch_log % args.save_freq == 0) and main_process():
-            filename = args.save_path + '/train_epoch_' + str(epoch_log) + '.pth'
+            filename = args.save_path + f'/train_epoch_s{args.train_h}_' + str(epoch_log) + '.pth'
             logger.info('Saving checkpoint to: ' + filename)
             torch.save({'epoch': epoch_log, 'state_dict': model.state_dict(), 'optimizer': optimizer.state_dict()}, filename)
             if epoch_log / args.save_freq > 2:
