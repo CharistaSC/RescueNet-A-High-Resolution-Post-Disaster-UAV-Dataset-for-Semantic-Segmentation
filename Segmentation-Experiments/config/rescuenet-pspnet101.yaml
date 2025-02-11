@@ -34,7 +34,7 @@ TRAIN:
   save_freq: 1
   save_path: exp/RescueNet/pspnet101/model
   weight:  # path to initial weight (default: none)
-  resume:  exp/RescueNet/pspnet101/model/train_epoch_s1025_3.pth # path to latest checkpoint (default: none)
+  resume:  exp/RescueNet/pspnet101/model/train_epoch_s1025_5.pth # path to latest checkpoint (default: none)
   evaluate: False  # evaluate on validation set, extra gpu memory needed and small batch_size_val is recommend
 Distributed:
   dist_url: tcp://127.0.0.1:6789
@@ -61,7 +61,7 @@ TEST:
   index_step: 0  # evaluation step index in list, 0 means to end
   test_gpu: [0]
   model_path: # evaluation model path
-  save_folder: results/ # results save folder
+  save_folder: results # results save folder
   imshow_batch: True # [True, False], True=for visual result, False=for numeric result
   device: cuda
   ignore_unlabeled: True
