@@ -48,6 +48,7 @@ def get_logger():
 
     # File handler (logs.txt will store all logs)
     log_file = f"{args.save_path}/training_log_s{args.train_h}.txt"  # Change the name/path if needed
+    os.makedirs(os.path.dirname(log_file), exist_ok=True)  # Ensure the directory exists
     file_handler = logging.FileHandler(log_file)
     file_fmt = "[%(asctime)s] %(levelname)s: %(message)s"
     file_handler.setFormatter(logging.Formatter(file_fmt))
@@ -220,7 +221,7 @@ def main_worker(gpu, ngpus_per_node, argss):
             logger.info('Saving checkpoint to: ' + filename)
             torch.save({'epoch': epoch_log, 'state_dict': model.state_dict(), 'optimizer': optimizer.state_dict()}, filename)
             if epoch_log / args.save_freq > 2:
-                deletename = args.save_path + '/train_epoch_' + str(epoch_log - args.save_freq * 2) + '.pth'
+                deletename = args.save_path + f'/train_epoch_s{args.train_h}_' + str(epoch_log - args.save_freq * 2) + '.pth'
                 os.remove(deletename)
         if args.evaluate:
             loss_val, mIoU_val, mAcc_val, allAcc_val = validate(val_loader, model, criterion)
@@ -399,7 +400,7 @@ def test(model, test_loader, class_weights, class_encoding):
     print("\nTesting...\n")
 
     num_classes = len(class_encoding)
-
+    print("Number of classes to predict:", num_classes)
     # We are going to use the CrossEntropyLoss loss function as it's most
     # frequentely used in classification problems with multiple classes which
     # fits the problem. This criterion  combines LogSoftMax and NLLLoss.
